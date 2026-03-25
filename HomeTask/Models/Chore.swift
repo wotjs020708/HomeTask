@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 final class Chore {
@@ -21,7 +22,7 @@ final class Chore {
     
     init(
         title: String,
-        category: ChoreCategory = .other,
+        category: ChoreCategory = .trash,
         points: Int = 10,
         dueDate: Date? = nil,
         repeatInterval: RepeatInterval? = nil
@@ -51,13 +52,30 @@ enum ChoreCategory: String, Codable, CaseIterable, Identifiable {
     var icon: String {
         switch self {
         case .cleaning: "sparkles"
-        case .laundry: "washer"
-        case .dishes: "sink"
-        case .cooking: "frying.pan"
-        case .trash: "trash"
-        case .other: "ellipsis.circle"
+        case .laundry: "washer.fill"
+        case .dishes: "sink.fill"
+        case .cooking: "frying.pan.fill"
+        case .trash: "trash.fill"
+        case .other: "ellipsis.circle.fill"
         }
     }
+    
+    var color: Color {
+        switch self{
+        case .cleaning:
+            return .blue
+        case .laundry:
+            return .purple
+        case .dishes:
+            return .green
+        case .cooking:
+            return .orange
+        case .trash:
+            return .red
+        case .other:
+            return .gray
+        }
+    }    
 }
 
 enum RepeatInterval: String, Codable, CaseIterable, Identifiable {
