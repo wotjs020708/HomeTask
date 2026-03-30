@@ -16,7 +16,7 @@ final class Chore {
     var isCompleted: Bool
     var completedAt: Date?
     var points: Int
-    var dueDate: Date??
+    var dueDate: Date?
     var repeatInterval: RepeatInterval?
     var createdAt: Date
     
