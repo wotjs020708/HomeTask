@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+
 @main
 struct HomeTaskApp: App {
     let container: ModelContainer
