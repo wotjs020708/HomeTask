@@ -6,66 +6,79 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ChoreView: View {
-    @State var chores: [Chore] = Chore.mockData
+    @Query(sort: \Chore.createdAt, order: .reverse)
+    var chores: [Chore]
     
-    var completedCount: Int {
-        chores.filter(\.isCompleted).count
+    @Environment(HomeTaskModel.self) private var model
+    @State private var showingSeet: Bool = false
+    var completedChores: [Chore] {
+        chores.filter(\.isCompleted)
     }
-    var totalCount: Int {
-        chores.count
+    var incompleteChores: [Chore] {
+        chores.filter { !$0.isCompleted }
     }
-
+    
     var body: some View {
         NavigationStack {
             List {
-            
-                if totalCount > 0 {
-                    ProgressView(value: Double(completedCount),
-                                 total: Double(totalCount)) {
+                if !chores.isEmpty {
+                    ProgressView(value: Double(completedChores.count),
+                                 total: Double(chores.count)) {
                     } currentValueLabel: {
                         HStack {
                             Spacer()
-                            Text("\(completedCount)/\(totalCount) 완료")
+                            Text("\(completedChores.count)/\(chores.count) 완료")
                         }
                     }
                     .tint(.green)
+                    .animation(.smooth, value: completedChores.count)
                     .listRowSeparator(.hidden)
                 }
                 
                 Section("미완료"){
-                    ForEach(chores, id: \.id) { chore in
-                        if chore.isCompleted {
-                            ChoreListView(chore: chore)
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        
-                                    } label: {
-                                        Label("삭제", systemImage: "trash")
-                                    }
+                    ForEach(incompleteChores) { chore in
+                        ChoreListView(chore: chore)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    model.deleteChore(chore)
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
                                 }
-                                .swipeActions(edge: .leading) {
-                                    Button {
-                                        
-                                    } label: {
-                                        Label("완료", systemImage: "checkmark").tint(.green)
-                                    }
+                            }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    model.completeChore(chore)
+                                } label: {
+                                    Label("완료", systemImage: "checkmark").tint(.green)
                                 }
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 7, leading: 14, bottom: 7, trailing: 14))
-                            
-                        }
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 7, leading: 14, bottom: 7, trailing: 14))
                     }
                 }
                 Section("완료") {
-                    ForEach(chores, id: \.id) { chore in
-                        if !chore.isCompleted {
-                            ChoreListView(chore: chore)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 7, leading: 14, bottom: 7, trailing: 14))
-                            
-                        }
+                    ForEach(completedChores) { chore in
+                        ChoreListView(chore: chore)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    model.deleteChore(chore)
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    model.uncompleteChore(chore)
+                                } label: {
+                                    Label("취소", systemImage: "arrow.uturn.backward")
+                                        .tint(.orange)
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 7, leading: 14, bottom: 7, trailing: 14))
                     }
                 }
             }
@@ -73,7 +86,7 @@ struct ChoreView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // 추가 화면 열기
+                        showingSeet = true
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -83,6 +96,9 @@ struct ChoreView: View {
             .scrollIndicators(.hidden)
             .navigationTitle("집안일")
             .navigationBarTitleDisplayMode(.large)
+        }
+        .sheet(isPresented: $showingSeet) {
+            AddChoreView()
         }
     }
 }
@@ -98,7 +114,7 @@ struct ChoreListView: View{
     
     var body: some View {
         HStack(spacing: 12) {
-            if chore.isCompleted {
+            if !chore.isCompleted {
                 Image(systemName: "circle")
                     .resizable()
                     .scaledToFit()
@@ -129,8 +145,8 @@ struct ChoreListView: View{
                 
                 Text(chore.title)
                     .font(.headline)
-                    .strikethrough(!chore.isCompleted)
-                    .foregroundStyle(chore.isCompleted ? .textPrimary : .textTertiary)
+                    .strikethrough(chore.isCompleted)
+                    .foregroundStyle(chore.isCompleted ?  .textTertiary: .textPrimary)
                     .lineLimit(1)
                 HStack(alignment: .center,spacing: 4) {
                     if chore.repeatInterval != nil {
@@ -153,19 +169,20 @@ struct ChoreListView: View{
         .background{
             RoundedRectangle(cornerRadius: 12)
                 .foregroundStyle(.backgroundPrimary)
+                .shadow(color: .gray.opacity(0.3), radius: 5, x:0, y: 2)
         }
         .overlay {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.htSeparator, lineWidth: 0.5)
         }
-        .opacity(chore.isCompleted ? 1 : 0.5)
+        .opacity(chore.isCompleted ? 0.5 : 1)
         
     }
 }
 
 
 #Preview {
-    
     ChoreView()
-    
+        .environment(HomeTaskModel(modelContext: PreviewContainer.context))
+        .modelContainer(PreviewContainer.container)
 }

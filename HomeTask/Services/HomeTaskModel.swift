@@ -16,5 +16,90 @@ class HomeTaskModel {
         self.modelContext = modelContext
     }
     
-  //TODO: Model관 관련된 로직 작성
+    // MARK: - Chore CRUD
+    
+    @discardableResult
+    func createChore(
+        title: String,
+        category: ChoreCategory = .other,
+        points: Int = 10,
+        dueDate: Date? = nil,
+        repeatInterval: RepeatInterval? = nil
+    ) -> Chore {
+        let chore = Chore(
+            title: title,
+            category: category,
+            points: points,
+            dueDate: dueDate,
+            repeatInterval: repeatInterval
+        )
+        modelContext.insert(chore)
+        return chore
+    }
+    
+    func completeChore(_ chore: Chore) {
+        chore.isCompleted = true
+        chore.completedAt = .now
+        
+        if let interval = chore.repeatInterval {
+            let nextDueDate = calculateNextDueDate(
+                from: chore.dueDate ?? .now,
+                interval: interval
+            )
+            createChore(
+                title: chore.title,
+                category: chore.category,
+                points: chore.points,
+                dueDate: nextDueDate,
+                repeatInterval: interval
+            )
+        }
+        try? modelContext.save()
+        
+    }
+    
+    func uncompleteChore(_ chore: Chore) {
+        chore.isCompleted = false
+        chore.completedAt = nil
+        
+        try? modelContext.save()
+    }
+    
+    func updateChore(
+        _ chore: Chore,
+        title: String? = nil,
+        category: ChoreCategory? = nil,
+        points: Int? = nil,
+        dueDate: Date? = nil,
+        repeatInterval: RepeatInterval? = nil
+    ) {
+        if let title { chore.title = title }
+        if let category { chore.category = category }
+        if let points { chore.points = points }
+        if let dueDate { chore.dueDate = dueDate }
+        if let repeatInterval { chore.repeatInterval = repeatInterval }
+        
+        try? modelContext.save()
+    }
+    
+    func deleteChore(_ chore: Chore) {
+        modelContext.delete(chore)
+        try? modelContext.save()
+    }
+    
+    // MARK: - Private Helpers
+    
+    private func calculateNextDueDate(from date: Date, interval: RepeatInterval) -> Date {
+        let calendar = Calendar.current
+        switch interval {
+        case .daily:
+            return calendar.date(byAdding: .day, value: 1, to: date) ?? date
+        case .weekly:
+            return calendar.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
+        case .biweekly:
+            return calendar.date(byAdding: .weekOfYear, value: 2, to: date) ?? date
+        case .monthly:
+            return calendar.date(byAdding: .month, value: 1, to: date) ?? date
+        }
+    }
 }
