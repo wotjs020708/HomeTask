@@ -25,8 +25,15 @@ struct HomeTaskApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            ChoreView()
+            if hasCompletedOnboarding {
+                ChoreView()
+                    .environment(homeTaskModel)
+            } else {
+                OnboardingView(onComplete: {
+                    hasCompletedOnboarding = true
+                })
                 .environment(homeTaskModel)
+            }
         }
         .modelContainer(container)
     }
