@@ -12,10 +12,11 @@ import SwiftData
 struct HomeTaskApp: App {
     let container: ModelContainer
     @State private var homeTaskModel: HomeTaskModel
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     
     init() {
         let container = try! ModelContainer(
-            for: Chore.self
+            for: Chore.self, Place.self
         )
         self.container = container
         self._homeTaskModel = State(
