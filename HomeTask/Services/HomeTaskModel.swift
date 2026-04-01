@@ -102,4 +102,31 @@ class HomeTaskModel {
             return calendar.date(byAdding: .month, value: 1, to: date) ?? date
         }
     }
+    
+    // MARK: - Place CRUD
+
+    @discardableResult
+    func createPlace(
+        name: String,
+        latitude: Double,
+        longitude: Double,
+        radius: Double = 100,
+        type: PlaceType
+    ) -> Place {
+        let place = Place(
+            name: name,
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius,
+            type: type
+        )
+        modelContext.insert(place)
+        try? modelContext.save()
+        return place
+    }
+
+    func deletePlace(_ place: Place) {
+        modelContext.delete(place)
+        try? modelContext.save()
+    }
 }
