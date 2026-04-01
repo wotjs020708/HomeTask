@@ -282,6 +282,11 @@ struct MapPreview: View {
                 position = makeRegion(radius: radius)
             }
         }
+        .onChange(of: coordinate.longitude) { _, _ in
+            withAnimation {
+                position = makeRegion(radius: radius)
+            }
+        }
         .onChange(of: radius) { _, newRadius in
             withAnimation {
                 position = makeRegion(radius: newRadius)

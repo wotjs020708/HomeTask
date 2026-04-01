@@ -59,8 +59,8 @@ struct AddressSearchView: View {
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: "장소 또는 주소 입력"
             )
-            .onChange(of: query) { _, newValue in
-                Task { await search(query: newValue) }
+            .task(id: query) {
+                await search(query: query)
             }
             .overlay {
                 if isSearching {
