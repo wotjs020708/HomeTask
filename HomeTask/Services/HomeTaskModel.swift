@@ -18,11 +18,12 @@ class HomeTaskModel {
     }
     
     func startGeofencing() async {
-           geofenceManager.requestAlwaysAuthorization()
-           let descriptor = FetchDescriptor<Place>()
-           let places = (try? modelContext.fetch(descriptor)) ?? []
-           await geofenceManager.startMonitoring(places: places)
-       }
+        geofenceManager.requestAlwaysAuthorization()
+        geofenceManager.requestNotificationAuthorization()
+        let descriptor = FetchDescriptor<Place>()
+        let places = (try? modelContext.fetch(descriptor)) ?? []
+        await geofenceManager.startMonitoring(places: places)
+    }
     
     // MARK: - Chore CRUD
     
@@ -112,7 +113,7 @@ class HomeTaskModel {
     }
     
     // MARK: - Place CRUD
-
+    
     @discardableResult
     func createPlace(
         name: String,
@@ -133,9 +134,9 @@ class HomeTaskModel {
         Task { await geofenceManager.updateMonitoring(for: place) }
         return place
     }
-
+    
     func deletePlace(_ place: Place) {
-        Task { await geofenceManager.removeMonitoring(for: place) } 
+        Task { await geofenceManager.removeMonitoring(for: place)}
         modelContext.delete(place)
         try? modelContext.save()
     }
