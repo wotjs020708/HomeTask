@@ -11,10 +11,18 @@ import SwiftData
 @Observable
 class HomeTaskModel {
     private let modelContext: ModelContext
+    let geofenceManager = GeofenceManager()
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
+    
+    func startGeofencing() async {
+           geofenceManager.requestAlwaysAuthorization()
+           let descriptor = FetchDescriptor<Place>()
+           let places = (try? modelContext.fetch(descriptor)) ?? []
+           await geofenceManager.startMonitoring(places: places)
+       }
     
     // MARK: - Chore CRUD
     
@@ -122,10 +130,12 @@ class HomeTaskModel {
         )
         modelContext.insert(place)
         try? modelContext.save()
+        Task { await geofenceManager.updateMonitoring(for: place) }
         return place
     }
 
     func deletePlace(_ place: Place) {
+        Task { await geofenceManager.removeMonitoring(for: place) } 
         modelContext.delete(place)
         try? modelContext.save()
     }
