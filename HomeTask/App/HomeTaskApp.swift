@@ -28,6 +28,9 @@ struct HomeTaskApp: App {
             if hasCompletedOnboarding {
                 ChoreView()
                     .environment(homeTaskModel)
+                    .task {
+                        await homeTaskModel.startGeofencing()
+                    }
             } else {
                 OnboardingView(onComplete: {
                     hasCompletedOnboarding = true

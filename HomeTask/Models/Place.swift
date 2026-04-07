@@ -10,6 +10,7 @@ import SwiftData
 
 @Model
 final class Place {
+    var id: UUID = UUID()
     var name: String
     var latitude: Double
     var longitude: Double
