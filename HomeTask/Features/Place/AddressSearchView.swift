@@ -33,11 +33,25 @@ struct AddressSearchView: View {
                                     Text(item.name ?? "이름 없음")
                                         .font(.body)
                                         .foregroundStyle(.primary)
-                                    
-                                    if let address = item.address {
-                                        Text(address.shortAddress ?? address.fullAddress)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+
+                                    if #available(iOS 26.0, *) {
+                                        if let address = item.address {
+                                            Text(address.shortAddress ?? address.fullAddress)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    } else {
+                                        let parts = [
+                                            item.placemark.thoroughfare,
+                                            item.placemark.locality,
+                                            item.placemark.administrativeArea
+                                        ].compactMap { $0 }
+
+                                        if !parts.isEmpty {
+                                            Text(parts.joined(separator: ", "))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
                                     }
                                 }
                                 .padding(.vertical, 4)
