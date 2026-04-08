@@ -26,7 +26,7 @@ struct HomeTaskApp: App {
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
-                ChoreView()
+                MainTabView()
                     .environment(homeTaskModel)
                     .task {
                         await homeTaskModel.startGeofencing()

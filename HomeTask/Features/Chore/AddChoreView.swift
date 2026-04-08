@@ -22,7 +22,7 @@ struct AddChoreView: View {
     @State private var repeatInterval: RepeatInterval = .weekly
     
     var body: some View {
-        NavigationStack {
+        VStack {
             Form {
                 titleSection
                 categorySection

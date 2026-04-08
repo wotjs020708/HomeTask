@@ -46,7 +46,7 @@ struct OnboardingView: View {
             AddressSearchView { item in
                 selectedAddress = item.name ?? ""
                 placeName = item.name ?? ""
-                selectedCoordinate = item.location.coordinate
+                selectedCoordinate = item.placemark.location?.coordinate
             }
         }
     }

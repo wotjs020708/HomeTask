@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import CoreLocation
 
 @Observable
 class HomeTaskModel {
@@ -18,8 +19,17 @@ class HomeTaskModel {
     }
     
     func startGeofencing() async {
-        geofenceManager.requestAlwaysAuthorization()
+        switch geofenceManager.authorizationStatus {
+        case .notDetermined:
+            geofenceManager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse:
+            geofenceManager.requestAlwaysAuthorization()
+        default:
+            break
+        }
+
         geofenceManager.requestNotificationAuthorization()
+
         let descriptor = FetchDescriptor<Place>()
         let places = (try? modelContext.fetch(descriptor)) ?? []
         await geofenceManager.startMonitoring(places: places)
