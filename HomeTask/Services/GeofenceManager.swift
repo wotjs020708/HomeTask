@@ -34,9 +34,17 @@ final class GeofenceManager: NSObject {
         super.init()
         locationManager.delegate = self
         authorizationStatus = locationManager.authorizationStatus
+        
+        if locationManager.authorizationStatus == .authorizedWhenInUse {
+               locationManager.requestAlwaysAuthorization()
+           }
     }
 
     // MARK: - 위치 권한 요청
+    func requestWhenInUseAuthorization() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
     func requestAlwaysAuthorization() {
         locationManager.requestAlwaysAuthorization()
     }
@@ -208,5 +216,9 @@ extension GeofenceManager: CLLocationManagerDelegate {
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
+        
+        if manager.authorizationStatus == .authorizedWhenInUse {
+               locationManager.requestAlwaysAuthorization()
+           }
     }
 }
