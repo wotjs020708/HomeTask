@@ -15,7 +15,7 @@ struct PlacesListView: View {
     @State private var showAddPlace = false
 
     var body: some View {
-        NavigationStack {
+        VStack {
             Group {
                 if places.isEmpty {
                     emptyView
@@ -70,7 +70,6 @@ struct PlaceRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            // 아이콘
             ZStack {
                 Circle()
                     .fill(Color.accentColor.opacity(0.12))
@@ -79,7 +78,6 @@ struct PlaceRow: View {
                     .foregroundStyle(Color.accentColor)
             }
 
-            // 정보
             VStack(alignment: .leading, spacing: 3) {
                 Text(place.name)
                     .font(.body)

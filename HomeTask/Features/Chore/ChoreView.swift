@@ -22,7 +22,7 @@ struct ChoreView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        VStack {
             List {
                 if !chores.isEmpty {
                     ProgressView(value: Double(completedChores.count),
