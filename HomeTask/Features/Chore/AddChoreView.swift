@@ -15,18 +15,16 @@ struct AddChoreView: View {
     
     @State private var title = ""
     @State private var category: ChoreCategory = .other
-    @State private var points = 10
     @State private var hasDueDate = false
     @State private var dueDate: Date = .now
     @State private var hasRepeat = false
     @State private var repeatInterval: RepeatInterval = .weekly
-    
+
     var body: some View {
         VStack {
             Form {
                 titleSection
                 categorySection
-                pointsSection
                 optionalSettingsSection
             }
             .navigationTitle("집안일 추가")
@@ -60,12 +58,6 @@ struct AddChoreView: View {
         }
     }
     
-    private var pointsSection: some View {
-        Section {
-            Stepper("포인트: \(points)", value: $points, in: 1...100, step: 5)
-        }
-    }
-    
     private var optionalSettingsSection: some View {
         Section("추가 설정") {
             Toggle("마감일 설정", isOn: $hasDueDate.animation())
@@ -93,7 +85,6 @@ struct AddChoreView: View {
         model.createChore(
             title: title.trimmingCharacters(in: .whitespaces),
             category: category,
-            points: points,
             dueDate: hasDueDate ? dueDate : nil,
             repeatInterval: hasRepeat ? repeatInterval : nil
         )

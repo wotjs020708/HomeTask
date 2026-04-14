@@ -15,15 +15,13 @@ final class Chore {
     var category: ChoreCategory
     var isCompleted: Bool
     var completedAt: Date?
-    var points: Int
     var dueDate: Date?
     var repeatInterval: RepeatInterval?
     var createdAt: Date
-    
+
     init(
         title: String,
         category: ChoreCategory = .trash,
-        points: Int = 10,
         dueDate: Date? = nil,
         repeatInterval: RepeatInterval? = nil
     ) {
@@ -31,7 +29,6 @@ final class Chore {
         self.category = category
         self.isCompleted = false
         self.completedAt = nil
-        self.points = points
         self.dueDate = dueDate
         self.repeatInterval = repeatInterval
         self.createdAt = .now
@@ -99,102 +96,90 @@ extension Chore {
         let chore1 = Chore(
             title: "청소기 돌리기",
             category: .cleaning,
-            points: 15,
             dueDate: now,
             repeatInterval: .weekly
         )
-        
+
         let chore2 = Chore(
             title: "설거지",
             category: .dishes,
-            points: 10,
             dueDate: now,
             repeatInterval: .daily
         )
-        
+
         let chore3 = Chore(
             title: "분리수거 내놓기",
             category: .trash,
-            points: 10,
             dueDate: now
         )
-        
+
         // MARK: 미완료 - 내일 마감
         let chore4 = Chore(
             title: "빨래 돌리기",
             category: .laundry,
-            points: 10,
             dueDate: calendar.date(byAdding: .day, value: 1, to: now),
             repeatInterval: .weekly
         )
-        
+
         // MARK: 미완료 - 이번 주 내
         let chore5 = Chore(
             title: "화장실 청소",
             category: .cleaning,
-            points: 20,
             dueDate: calendar.date(byAdding: .day, value: 3, to: now),
             repeatInterval: .weekly
         )
-        
+
         let chore6 = Chore(
             title: "냉장고 정리",
             category: .other,
-            points: 15,
             dueDate: calendar.date(byAdding: .day, value: 5, to: now),
             repeatInterval: .biweekly
         )
-        
+
         // MARK: 미완료 - 마감 없음
         let chore7 = Chore(
             title: "에어컨 필터 청소",
             category: .cleaning,
-            points: 25,
             dueDate: nil,
             repeatInterval: .monthly
         )
-        
+
         let chore8 = Chore(
             title: "밀프렙 (닭가슴살 + 현미밥)",
-            category: .cooking,
-            points: 20
+            category: .cooking
         )
-        
+
         // MARK: 완료된 항목
         let chore9 = Chore(
             title: "침대 정리",
             category: .cleaning,
-            points: 5,
             dueDate: now,
             repeatInterval: .daily
         )
         chore9.isCompleted = true
         chore9.completedAt = calendar.date(byAdding: .hour, value: -2, to: now)
-        
+
         let chore10 = Chore(
             title: "빨래 개기",
             category: .laundry,
-            points: 10,
             dueDate: now
         )
         chore10.isCompleted = true
         chore10.completedAt = calendar.date(byAdding: .hour, value: -5, to: now)
-        
+
         let chore11 = Chore(
             title: "배수구 청소",
             category: .cleaning,
-            points: 20,
             dueDate: calendar.date(byAdding: .day, value: -1, to: now),
             repeatInterval: .monthly
         )
         chore11.isCompleted = true
         chore11.completedAt = calendar.date(byAdding: .day, value: -1, to: now)
-        
+
         // MARK: 미완료 - 마감 지남 (overdue)
         let chore12 = Chore(
             title: "다림질",
             category: .laundry,
-            points: 15,
             dueDate: calendar.date(byAdding: .day, value: -2, to: now)
         )
         

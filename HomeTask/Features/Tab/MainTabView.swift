@@ -33,8 +33,6 @@ struct MainTabView: View {
             NavigationStack(path: $shoppingPath) {
                 ShoppingView()
             }
-        case .point:
-            PointView()
         case .settings:
             NavigationStack {
                 SettingsView()
