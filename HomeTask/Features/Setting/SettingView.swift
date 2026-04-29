@@ -9,7 +9,9 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        Text("SettingsView")
+        List {
+            NavigationLink("위치 관리", destination: PlacesListView())
+        }
     }
 }
 

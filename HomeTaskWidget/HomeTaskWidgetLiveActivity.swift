@@ -9,72 +9,58 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct HomeTaskWidgetAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        // Dynamic stateful properties about your activity go here!
-        var emoji: String
-    }
-
-    // Fixed non-changing properties about your activity go here!
-    var name: String
-}
-
 struct HomeTaskWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: HomeTaskWidgetAttributes.self) { context in
-            // Lock screen/banner UI goes here
-            VStack {
-                Text("Hello \(context.state.emoji)")
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("🏠 \(context.attributes.placeName) 도착!")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text(context.state.pendingChoreTitle)
+                        .font(.headline).bold()
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(context.state.completedChores)/\(context.state.totalChores)")
+                        .font(.title2).bold()
+                    ProgressView(
+                        value: Double(context.state.completedChores),
+                        total: Double(context.state.totalChores)
+                    )
+                    .tint(.green)
+                    .frame(width: 60)
+                }
             }
-            .activityBackgroundTint(Color.cyan)
-            .activitySystemActionForegroundColor(Color.black)
-
+            .padding()
+            .activityBackgroundTint(Color(.systemBackground))
+            
         } dynamicIsland: { context in
             DynamicIsland {
-                // Expanded UI goes here.  Compose the expanded UI through
-                // various regions, like leading/trailing/center/bottom
                 DynamicIslandExpandedRegion(.leading) {
-                    Text("Leading")
+                    Label("집안일", systemImage: "house.fill")
+                        .font(.caption)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text("Trailing")
+                    Text("\(context.state.completedChores)/\(context.state.totalChores)")
+                        .font(.headline).bold()
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text("Bottom \(context.state.emoji)")
-                    // more content
+                    HStack {
+                        Text(context.state.pendingChoreTitle)
+                        Spacer()
+                            .foregroundStyle(.orange)
+                    }
+                    .font(.caption)
                 }
             } compactLeading: {
-                Text("L")
+                Image(systemName: "house.fill")
+                    .foregroundStyle(.blue)
             } compactTrailing: {
-                Text("T \(context.state.emoji)")
+                Text("\(context.state.completedChores)/\(context.state.totalChores)")
+                    .font(.caption2).bold()
             } minimal: {
-                Text(context.state.emoji)
+                Image(systemName: "house.fill")
             }
-            .widgetURL(URL(string: "http://www.apple.com"))
-            .keylineTint(Color.red)
         }
     }
-}
-
-extension HomeTaskWidgetAttributes {
-    fileprivate static var preview: HomeTaskWidgetAttributes {
-        HomeTaskWidgetAttributes(name: "World")
-    }
-}
-
-extension HomeTaskWidgetAttributes.ContentState {
-    fileprivate static var smiley: HomeTaskWidgetAttributes.ContentState {
-        HomeTaskWidgetAttributes.ContentState(emoji: "😀")
-     }
-     
-     fileprivate static var starEyes: HomeTaskWidgetAttributes.ContentState {
-         HomeTaskWidgetAttributes.ContentState(emoji: "🤩")
-     }
-}
-
-#Preview("Notification", as: .content, using: HomeTaskWidgetAttributes.preview) {
-   HomeTaskWidgetLiveActivity()
-} contentStates: {
-    HomeTaskWidgetAttributes.ContentState.smiley
-    HomeTaskWidgetAttributes.ContentState.starEyes
 }

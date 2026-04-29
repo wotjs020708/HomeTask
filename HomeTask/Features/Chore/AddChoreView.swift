@@ -21,27 +21,30 @@ struct AddChoreView: View {
     @State private var repeatInterval: RepeatInterval = .weekly
 
     var body: some View {
-        VStack {
-            Form {
-                titleSection
-                categorySection
-                optionalSettingsSection
-            }
-            .navigationTitle("집안일 추가")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("취소") { dismiss() }
+        NavigationStack{
+            VStack {
+                Form {
+                    titleSection
+                    categorySection
+                    optionalSettingsSection
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("저장") {
-                        saveChore()
+                .navigationTitle("집안일 추가")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("취소") { dismiss() }
                     }
-                    .fontWeight(.semibold)
-                    .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("저장") {
+                            saveChore()
+                        }
+                        .fontWeight(.semibold)
+                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
             }
         }
+        
     }
     
     // MARK: - Sections

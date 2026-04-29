@@ -13,6 +13,7 @@ import CoreLocation
 class HomeTaskModel {
     private let modelContext: ModelContext
     let geofenceManager = GeofenceManager()
+    let liveActivityManager = LiveActivityManager()
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -30,9 +31,38 @@ class HomeTaskModel {
 
         geofenceManager.requestNotificationAuthorization()
 
+        // 집 도착/이탈 콜백 등록
+        geofenceManager.onHomeArrival = { [weak self] in
+            self?.startLiveActivity()
+        }
+        geofenceManager.onHomeDeparture = { [weak self] in
+            guard let self else { return }
+            Task { await self.liveActivityManager.endActivity() }
+        }
+
         let descriptor = FetchDescriptor<Place>()
         let places = (try? modelContext.fetch(descriptor)) ?? []
         await geofenceManager.startMonitoring(places: places)
+    }
+
+    // MARK: - Live Activity
+
+    private func startLiveActivity() {
+        let descriptor = FetchDescriptor<Chore>()
+        let allChores = (try? modelContext.fetch(descriptor)) ?? []
+        let total = allChores.count
+        let completed = allChores.filter(\.isCompleted).count
+        let nextPending = allChores.first(where: { !$0.isCompleted })?.title ?? "할 일 없음"
+
+        let homePlaceDescriptor = FetchDescriptor<Place>()
+        let homeName = (try? modelContext.fetch(homePlaceDescriptor))?.first(where: { $0.type == .home })?.name ?? "우리집"
+
+        liveActivityManager.startActivity(
+            placeName: homeName,
+            totalChores: total,
+            completedChores: completed,
+            pendingChoreTitle: nextPending
+        )
     }
     
     // MARK: - Chore CRUD
@@ -71,6 +101,20 @@ class HomeTaskModel {
             )
         }
         try? modelContext.save()
+        
+        let descriptor = FetchDescriptor<Chore>()
+           let allChores = (try? modelContext.fetch(descriptor)) ?? []
+           let total = allChores.count
+           let completed = allChores.filter(\.isCompleted).count
+           let nextPending = allChores.first(where: { !$0.isCompleted })?.title ?? "모두 완료!"
+
+           Task {
+               await liveActivityManager.updateActivity(
+                   completedChores: completed,
+                   totalChores: total,
+                   pendingChoreTitle: nextPending
+               )
+           }
     }
 
     func uncompleteChore(_ chore: Chore) {
