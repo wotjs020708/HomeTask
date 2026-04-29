@@ -81,6 +81,7 @@ class HomeTaskModel {
             repeatInterval: repeatInterval
         )
         modelContext.insert(chore)
+        Task { await updateLiveActivity() }
         return chore
     }
 
@@ -88,6 +89,7 @@ class HomeTaskModel {
         chore.isCompleted = true
         chore.completedAt = .now
 
+        
         if let interval = chore.repeatInterval {
             let nextDueDate = calculateNextDueDate(
                 from: chore.dueDate ?? .now,
@@ -120,6 +122,8 @@ class HomeTaskModel {
     func uncompleteChore(_ chore: Chore) {
         chore.isCompleted = false
         chore.completedAt = nil
+        
+        Task { await updateLiveActivity() }
         try? modelContext.save()
     }
 
@@ -143,6 +147,19 @@ class HomeTaskModel {
     }
     
     // MARK: - Private Helpers
+    
+    private func updateLiveActivity() async {
+        let allChores = (try? modelContext.fetch(FetchDescriptor<Chore>())) ?? []
+        let total = allChores.count
+        let completed = allChores.filter(\.isCompleted).count
+        let pending = allChores.first(where: { !$0.isCompleted })?.title ?? "모두완료"
+        
+        await liveActivityManager.updateActivity(
+                completedChores: completed,
+                totalChores: total,
+                pendingChoreTitle: pending
+            )
+    }
     
     private func calculateNextDueDate(from date: Date, interval: RepeatInterval) -> Date {
         let calendar = Calendar.current
