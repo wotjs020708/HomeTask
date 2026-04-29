@@ -187,11 +187,6 @@ private extension GeofenceManager {
     func handleDeparture(info: PlaceInfo) {
         switch info.type {
         case .home:
-            
-            guard Activity<HomeTaskWidgetAttributes>.activities.isEmpty else {
-                print("[GeofenceManager] 🏠 Live Activity 이미 실행 중 - skip")
-                return
-            }
             print("[GeofenceManager] 🏠 집 이탈 감지")
             onHomeDeparture?()
         case .mart:
