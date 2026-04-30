@@ -13,6 +13,12 @@ final class LiveActivityManager {
 
     private var currentActivity: Activity<HomeTaskWidgetAttributes>?
 
+    private func restoreCurrentActivity() -> Activity<HomeTaskWidgetAttributes>? {
+        if let currentActivity { return currentActivity }
+        currentActivity = Activity<HomeTaskWidgetAttributes>.activities.first
+        return currentActivity
+    }
+    
     // MARK: - 라이브 액티비티 시작 (집 도착 시)
 
     func startActivity(
@@ -21,11 +27,27 @@ final class LiveActivityManager {
         completedChores: Int,
         pendingChoreTitle: String
     ) {
-        if let existing = Activity<HomeTaskWidgetAttributes>.activities.first {
-                currentActivity = existing
-                print("[LiveActivityManager] 기존 Activity 복원")
-                return
-            }
+        
+       
+        
+        
+        if let existing = restoreCurrentActivity() {
+                    Task {
+                        await existing.update(
+                            ActivityContent(
+                                state: .init(
+                                    totalChores: totalChores,
+                                    completedChores: completedChores,
+                                    pendingChoreTitle: pendingChoreTitle
+                                ),
+                                staleDate: nil
+                            )
+                        )
+                    }
+                    print("[LiveActivityManager] 기존 Activity 복원")
+                    return
+                }
+        
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             print("[LiveActivityManager] 라이브 액티비티 비활성화 상태")
             return
@@ -58,7 +80,7 @@ final class LiveActivityManager {
         totalChores: Int,
         pendingChoreTitle: String
     ) async {
-        guard let activity = currentActivity else { return }
+        guard let activity = restoreCurrentActivity() else { return }
 
         let newState = HomeTaskWidgetAttributes.ContentState(
             totalChores: totalChores,
@@ -72,7 +94,7 @@ final class LiveActivityManager {
     // MARK: - 종료 (집 이탈 또는 모든 집안일 완료 시)
 
     func endActivity() async {
-        guard let activity = currentActivity else { return }
+        guard let activity = restoreCurrentActivity() else { return }
         await activity.end(
             ActivityContent(state: activity.content.state, staleDate: nil),
             dismissalPolicy: .after(.now + 3)
