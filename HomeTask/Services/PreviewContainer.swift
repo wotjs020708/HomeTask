@@ -18,9 +18,7 @@ enum PreviewContainer {
         let schema = Schema([
             Chore.self,
             ShoppingItem.self,
-            Place.self,
-            PointRecord.self,
-            Reward.self
+            Place.self
         ])
         
         let config = ModelConfiguration(
@@ -69,19 +67,19 @@ private enum SampleData {
         
         // ── 집안일 ──
         let chores: [Chore] = [
-            Chore(title: "청소기 돌리기", category: .cleaning, points: 15, dueDate: .now, repeatInterval: .weekly),
-            Chore(title: "빨래 돌리기", category: .laundry, points: 10, dueDate: .now, repeatInterval: .daily),
-            Chore(title: "설거지", category: .dishes, points: 10, dueDate: .now, repeatInterval: .daily),
-            Chore(title: "분리수거", category: .trash, points: 20,
+            Chore(title: "청소기 돌리기", category: .cleaning, dueDate: .now, repeatInterval: .weekly),
+            Chore(title: "빨래 돌리기", category: .laundry, dueDate: .now, repeatInterval: .daily),
+            Chore(title: "설거지", category: .dishes, dueDate: .now, repeatInterval: .daily),
+            Chore(title: "분리수거", category: .trash,
                   dueDate: Calendar.current.date(byAdding: .day, value: 1, to: .now),
                   repeatInterval: .weekly),
-            Chore(title: "냉장고 정리", category: .cooking, points: 15,
+            Chore(title: "냉장고 정리", category: .cooking,
                   dueDate: Calendar.current.date(byAdding: .day, value: 3, to: .now),
                   repeatInterval: .monthly)
         ]
         chores.forEach { context.insert($0) }
-        
-        let completedChore = Chore(title: "화장실 청소", category: .cleaning, points: 20)
+
+        let completedChore = Chore(title: "화장실 청소", category: .cleaning)
         completedChore.isCompleted = true
         completedChore.completedAt = Calendar.current.date(byAdding: .hour, value: -2, to: .now)
         context.insert(completedChore)
@@ -102,29 +100,5 @@ private enum SampleData {
         purchasedItem.purchasedAt = Calendar.current.date(byAdding: .hour, value: -5, to: .now)
         context.insert(purchasedItem)
         
-        // ── 포인트 기록 ──
-        let pointRecords: [PointRecord] = [
-            PointRecord(points: 20, type: .earned, reason: "화장실 청소 완료"),
-            PointRecord(points: 10, type: .earned, reason: "설거지 완료"),
-            PointRecord(points: 15, type: .earned, reason: "청소기 돌리기 완료"),
-            PointRecord(points: 10, type: .earned, reason: "빨래 돌리기 완료"),
-            PointRecord(points: 20, type: .spent, reason: "커피 한 잔 사용")
-        ]
-        pointRecords.forEach { context.insert($0) }
-        
-        // ── 보상 ──
-        let rewards: [Reward] = [
-            Reward(name: "커피 한 잔", requiredPoints: 20),
-            Reward(name: "청소 면제권", requiredPoints: 30),
-            Reward(name: "치킨", requiredPoints: 50),
-            Reward(name: "영화 보기", requiredPoints: 80),
-            Reward(name: "하루 쉬기", requiredPoints: 100)
-        ]
-        rewards.forEach { context.insert($0) }
-        
-        let redeemedReward = Reward(name: "아이스크림", requiredPoints: 15)
-        redeemedReward.isRedeemed = true
-        redeemedReward.redeemedAt = Calendar.current.date(byAdding: .day, value: -1, to: .now)
-        context.insert(redeemedReward)
     }
 }

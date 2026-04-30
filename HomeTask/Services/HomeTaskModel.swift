@@ -13,6 +13,7 @@ import CoreLocation
 class HomeTaskModel {
     private let modelContext: ModelContext
     let geofenceManager = GeofenceManager()
+    let liveActivityManager = LiveActivityManager()
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -30,9 +31,38 @@ class HomeTaskModel {
 
         geofenceManager.requestNotificationAuthorization()
 
+        // 집 도착/이탈 콜백 등록
+        geofenceManager.onHomeArrival = { [weak self] in
+            self?.startLiveActivity()
+        }
+        geofenceManager.onHomeDeparture = { [weak self] in
+            guard let self else { return }
+            Task { await self.liveActivityManager.endActivity() }
+        }
+
         let descriptor = FetchDescriptor<Place>()
         let places = (try? modelContext.fetch(descriptor)) ?? []
         await geofenceManager.startMonitoring(places: places)
+    }
+
+    // MARK: - Live Activity
+
+    private func startLiveActivity() {
+        let descriptor = FetchDescriptor<Chore>()
+        let allChores = (try? modelContext.fetch(descriptor)) ?? []
+        let total = allChores.count
+        let completed = allChores.filter(\.isCompleted).count
+        let nextPending = allChores.first(where: { !$0.isCompleted })?.title ?? "할 일 없음"
+
+        let homePlaceDescriptor = FetchDescriptor<Place>()
+        let homeName = (try? modelContext.fetch(homePlaceDescriptor))?.first(where: { $0.type == .home })?.name ?? "우리집"
+
+        liveActivityManager.startActivity(
+            placeName: homeName,
+            totalChores: total,
+            completedChores: completed,
+            pendingChoreTitle: nextPending
+        )
     }
     
     // MARK: - Chore CRUD
@@ -41,24 +71,24 @@ class HomeTaskModel {
     func createChore(
         title: String,
         category: ChoreCategory = .other,
-        points: Int = 10,
         dueDate: Date? = nil,
         repeatInterval: RepeatInterval? = nil
     ) -> Chore {
         let chore = Chore(
             title: title,
             category: category,
-            points: points,
             dueDate: dueDate,
             repeatInterval: repeatInterval
         )
         modelContext.insert(chore)
+        Task { await updateLiveActivity() }
         return chore
     }
-    
+
     func completeChore(_ chore: Chore) {
         chore.isCompleted = true
         chore.completedAt = .now
+
         
         if let interval = chore.repeatInterval {
             let nextDueDate = calculateNextDueDate(
@@ -68,36 +98,46 @@ class HomeTaskModel {
             createChore(
                 title: chore.title,
                 category: chore.category,
-                points: chore.points,
                 dueDate: nextDueDate,
                 repeatInterval: interval
             )
         }
         try? modelContext.save()
         
+        let descriptor = FetchDescriptor<Chore>()
+           let allChores = (try? modelContext.fetch(descriptor)) ?? []
+           let total = allChores.count
+           let completed = allChores.filter(\.isCompleted).count
+           let nextPending = allChores.first(where: { !$0.isCompleted })?.title ?? "모두 완료!"
+
+           Task {
+               await liveActivityManager.updateActivity(
+                   completedChores: completed,
+                   totalChores: total,
+                   pendingChoreTitle: nextPending
+               )
+           }
     }
-    
+
     func uncompleteChore(_ chore: Chore) {
         chore.isCompleted = false
         chore.completedAt = nil
         
+        Task { await updateLiveActivity() }
         try? modelContext.save()
     }
-    
+
     func updateChore(
         _ chore: Chore,
         title: String? = nil,
         category: ChoreCategory? = nil,
-        points: Int? = nil,
         dueDate: Date? = nil,
         repeatInterval: RepeatInterval? = nil
     ) {
         if let title { chore.title = title }
         if let category { chore.category = category }
-        if let points { chore.points = points }
         if let dueDate { chore.dueDate = dueDate }
         if let repeatInterval { chore.repeatInterval = repeatInterval }
-        
         try? modelContext.save()
     }
     
@@ -107,6 +147,19 @@ class HomeTaskModel {
     }
     
     // MARK: - Private Helpers
+    
+    private func updateLiveActivity() async {
+        let allChores = (try? modelContext.fetch(FetchDescriptor<Chore>())) ?? []
+        let total = allChores.count
+        let completed = allChores.filter(\.isCompleted).count
+        let pending = allChores.first(where: { !$0.isCompleted })?.title ?? "모두완료"
+        
+        await liveActivityManager.updateActivity(
+                completedChores: completed,
+                totalChores: total,
+                pendingChoreTitle: pending
+            )
+    }
     
     private func calculateNextDueDate(from date: Date, interval: RepeatInterval) -> Date {
         let calendar = Calendar.current

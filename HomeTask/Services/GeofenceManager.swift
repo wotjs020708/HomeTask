@@ -9,6 +9,7 @@ import CoreLocation
 import Foundation
 import Observation
 import UserNotifications
+import ActivityKit
 
 @Observable
 final class GeofenceManager: NSObject {
@@ -28,6 +29,11 @@ final class GeofenceManager: NSObject {
     private let locationManager = CLLocationManager()
     private var monitorTask: Task<Void, Never>?
     private var monitoredPlaces: [String: PlaceInfo] = [:]
+
+    
+    // MARK: - Public
+    var onHomeArrival: (() -> Void)?
+    var onHomeDeparture: (() -> Void)?
 
     // MARK: - Init
     override init() {
@@ -169,7 +175,7 @@ private extension GeofenceManager {
         switch info.type {
         case .home:
             print("[GeofenceManager] 🏠 집 도착 감지")
-            // TODO: - 라이브엑티비티 실행
+            onHomeArrival?()
 
         case .mart:
             print("[GeofenceManager] 🛒 마트 도착 감지 → 장보기 알림 전송")
@@ -182,6 +188,7 @@ private extension GeofenceManager {
         switch info.type {
         case .home:
             print("[GeofenceManager] 🏠 집 이탈 감지")
+            onHomeDeparture?()
         case .mart:
             print("[GeofenceManager] 🛒 마트 이탈 감지")
         }
